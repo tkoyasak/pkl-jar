@@ -23,6 +23,9 @@ pkl test <test-module>.pkl
 
 # Regenerate GitHub Actions workflow YAML and dependabot.yml from index.pkl
 pkl eval .github/index.pkl -m .github --project-dir .github
+
+# Regenerate README.md from readme.pkl
+pkl eval readme.pkl -o README.md
 ```
 
 ## Architecture
@@ -61,6 +64,12 @@ GitHub Actions workflows and `dependabot.yml` are **generated** from `.github/in
 **After editing `index.pkl`, always regenerate and commit the YAML files together.** The `prb` workflow includes a `check-pkl-github-actions` job that runs the eval command and diffs the output — CI will fail if the committed YAML doesn't match the source PKL.
 
 **Template injection**: The `isValid` constraint rejects `${{` expressions directly in `run` fields. Pass GitHub context values via `env:` instead.
+
+### `readme.pkl`
+
+`README.md` is **generated** from `readme.pkl` — do not edit it directly. The module uses a globbed import (`[!.]*/PklProject`) to auto-discover all packages (excluding dot-prefixed directories like `.github/`), then builds a markdown table from each package's `name`, `version`, `sourceCode`, and `description` fields (where `description` comes from the PklProject's module-level docComment via `basePklProject.pkl`).
+
+When adding a new package, `README.md` will automatically include it on next generation — no changes to `readme.pkl` needed.
 
 ### Package: `obsidian.webClipper`
 
