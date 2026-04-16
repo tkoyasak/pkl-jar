@@ -1,0 +1,8 @@
+/// Type-safe schema for [Obsidian Web Clipper](https://obsidian.md/clipper) templates.
+amends "../basePklProject.pkl"
+
+dependencies {}
+
+package {
+  version = "0.0.0"
+}

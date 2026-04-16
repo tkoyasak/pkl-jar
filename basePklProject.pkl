@@ -1,0 +1,32 @@
+module basePklProject
+
+amends "pkl:Project"
+
+import "pkl:reflect"
+
+local mirror = reflect.Module(module)
+
+local packageName = findRootModule(mirror).relativePathTo(module).last
+
+local function findRootModule(mod: reflect.Module): Module =
+  let (supermodule = mod.supermodule)
+    if (supermodule == null || !supermodule.isAmend)
+      mod.reflectee
+    else
+      findRootModule(supermodule)
+
+local repo = "github.com/tkoyasak/pkl-jar"
+
+package {
+  name = packageName
+  baseUri = "package://pkg.pkl-lang.org/\(repo)/\(name)"
+  packageZipUrl = "https://\(repo)/releases/download/\(name)@\(version)/\(name)@\(version).zip"
+  description = mirror.docComment
+  authors {}
+  website = "https://\(repo)"
+  sourceCode = "https://\(repo)/tree/\(name)@\(version)/\(name)"
+  sourceCodeUrlScheme = "https://\(repo)/blob/\(name)@\(version)%{path}#L%{line}-L%{endLine}"
+  license = "MIT"
+  licenseText = read("LICENSE").text
+  issueTracker = "https://\(repo)/issues"
+}
