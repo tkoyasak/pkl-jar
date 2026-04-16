@@ -16,8 +16,12 @@ output {
 
     | Package | Version | Description |
     | ------- | ------- | ----------- |
-    \(allPklProjects.toMap().values.map((pkg) ->
-      "| [`\(pkg.package.name)`](\(pkg.package.sourceCode)) | \(pkg.package.version) | \(pkg.package.description) |"
-    ).join("\n"))
+    \(allPklProjects
+      .toMap()
+      .values
+      .map((pkg) ->
+        "| [`\(pkg.package.name)`](\(pkg.package.sourceCode)) | \(pkg.package.version) | \(pkg.package.description) |"
+      )
+      .join("\n"))
     """
 }
