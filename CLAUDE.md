@@ -20,6 +20,9 @@ pkl project package
 
 # Run tests
 pkl test <test-module>.pkl
+
+# Regenerate GitHub Actions workflow YAML and dependabot.yml from index.pkl
+pkl eval .github/index.pkl -m .github --project-dir .github
 ```
 
 ## Architecture
@@ -41,6 +44,23 @@ Each package's `PklProject` only needs to set `version` and any `dependencies`.
 2. Add `myPackage/PklProject` that amends `"../basePklProject.pkl"` and sets `version`.
 3. Add `myPackage/PklProject.deps.json` (run `pkl project resolve` to generate it).
 4. Add the PKL module files.
+
+### CI (`.github/`)
+
+GitHub Actions workflows and `dependabot.yml` are **generated** from `.github/index.pkl` — do not edit the YAML files directly. The index amends `PklCI.pkl` (from `pkl.impl.ghactions`) and defines workflow targets:
+
+| Field | Generated file | Trigger |
+|-------|---------------|---------|
+| `prb` | `workflows/prb.yml` | Pull requests |
+| `build` | `workflows/build.yml` | Push to non-main branches |
+| `main` | `workflows/main.yml` | Push to `main` |
+| `release` | `workflows/release.yml` | Tag push (optional) |
+
+`workflows/__lockfile__.yml` and `dependabot.yml` are also auto-generated.
+
+**After editing `index.pkl`, always regenerate and commit the YAML files together.** The `prb` workflow includes a `check-pkl-github-actions` job that runs the eval command and diffs the output — CI will fail if the committed YAML doesn't match the source PKL.
+
+**Template injection**: The `isValid` constraint rejects `${{` expressions directly in `run` fields. Pass GitHub context values via `env:` instead.
 
 ### Package: `obsidian.webClipper`
 

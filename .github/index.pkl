@@ -1,0 +1,79 @@
+amends "@pkl.impl.ghactions/PklCI.pkl"
+
+import "@com.github.actions/catalog.pkl"
+import "@com.github.actions/context.pkl"
+import "@com.github.actions/Workflow.pkl"
+import "@pkl.impl.ghactions/steps/SetupPkl.pkl"
+
+local pklVersion = "0.31.0"
+
+local setupPkl: Workflow.Step = (new SetupPkl { version = pklVersion }).step
+
+local buildWorkflow: Workflow = new {
+  jobs {
+    ["build"] {
+      `runs-on` = "ubuntu-latest"
+      steps {
+        catalog.`actions/checkout@v6`
+        setupPkl
+        new {
+          name = "Package"
+          run =
+            """
+            pkl project package obsidian.webClipper/
+            """
+        }
+      }
+    }
+  }
+}
+
+prb = buildWorkflow
+
+build = buildWorkflow
+
+main = (buildWorkflow) {
+  jobs {
+    ["release"] {
+      needs { "build" }
+      `runs-on` = "ubuntu-latest"
+      permissions {
+        contents = "write"
+      }
+      steps {
+        catalog.`actions/checkout@v6`
+        setupPkl
+        new {
+          name = "Package"
+          run =
+            """
+            pkl project package obsidian.webClipper/
+            """
+        }
+        new {
+          name = "Publish releases"
+          env {
+            ["GH_TOKEN"] = context.github.token
+            ["SHA"] = context.github.sha
+          }
+          run =
+            #"""
+            for dir in .out/*/; do
+              pkg=$(basename "$dir")
+              if gh release view "$pkg" 2>/dev/null; then
+                echo "Package $pkg already published"
+              else
+                echo "Releasing $pkg..."
+                gh release create "$pkg" \
+                  --title "$pkg" \
+                  --target "$SHA" \
+                  --notes "Release of $pkg" \
+                  "$dir"/*
+              fi
+            done
+            """#
+        }
+      }
+    }
+  }
+}
